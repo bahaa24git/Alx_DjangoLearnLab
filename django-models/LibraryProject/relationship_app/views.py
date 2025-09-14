@@ -3,13 +3,13 @@ from django.views.generic import ListView, DetailView
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import user_passes_test
-from .models import Book, Library, UserProfile  # make sure UserProfile exists
+from .models import Book, Library
 
-# -------------------------
-# Book / Library Views
-# -------------------------
+# -----------------------
+# Book and Library Views
+# -----------------------
 
-# Function-based view for listing books
+# Function-based view
 def list_books(request):
     books = Book.objects.all()
     return render(request, "relationship_app/list_books.html", {"books": books})
@@ -26,9 +26,9 @@ class LibraryDetailView(DetailView):
     template_name = "relationship_app/library_detail.html"
     context_object_name = "library"
 
-# -------------------------
+# -----------------------
 # Authentication Views
-# -------------------------
+# -----------------------
 
 # Registration view
 def register(request):
@@ -59,9 +59,9 @@ def logout_view(request):
     logout(request)
     return redirect("login")
 
-# -------------------------
-# Role-Based Access Views
-# -------------------------
+# -----------------------
+# Role-Based Views
+# -----------------------
 
 # Role check functions
 def is_admin(user):
@@ -73,17 +73,15 @@ def is_librarian(user):
 def is_member(user):
     return hasattr(user, 'userprofile') and user.userprofile.role == 'Member'
 
-# Admin view
+# Views restricted by role
 @user_passes_test(is_admin)
 def admin_view(request):
-    return render(request, 'relationship_app/admin_view.html')
+    return render(request, "relationship_app/admin_view.html")
 
-# Librarian view
 @user_passes_test(is_librarian)
 def librarian_view(request):
-    return render(request, 'relationship_app/librarian_view.html')
+    return render(request, "relationship_app/librarian_view.html")
 
-# Member view
 @user_passes_test(is_member)
 def member_view(request):
-    return render(request, 'relationship_app/member_view.html')
+    return render(request, "relationship_app/member_view.html")
