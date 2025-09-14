@@ -3,9 +3,9 @@ from django.views.generic import ListView, DetailView
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import user_passes_test
-from .models import Book, Library
 from django.contrib import messages
-from .models import UserProfile
+from .models import Book, Library, UserProfile
+
 # -----------------------
 # Book and Library Views
 # -----------------------
@@ -32,7 +32,6 @@ class LibraryDetailView(DetailView):
 # -----------------------
 
 # Registration view
-
 def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
