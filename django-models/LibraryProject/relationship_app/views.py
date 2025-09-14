@@ -4,7 +4,8 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.decorators import user_passes_test
 from .models import Book, Library
-
+from django.contrib import messages
+from .models import UserProfile
 # -----------------------
 # Book and Library Views
 # -----------------------
@@ -31,12 +32,16 @@ class LibraryDetailView(DetailView):
 # -----------------------
 
 # Registration view
+
 def register(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)  # automatically log in after registering
+            # Automatically create a UserProfile with default role 'Member'
+            UserProfile.objects.create(user=user, role='Member')
+            login(request, user)  # log in after registering
+            messages.success(request, "Your account has been created!")
             return redirect('list_books')
     else:
         form = UserCreationForm()
