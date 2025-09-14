@@ -55,6 +55,7 @@ MIDDLEWARE = [
 ROOT_URLCONF = 'LibraryProject.urls'
 
 TEMPLATES = [
+    
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [],
@@ -65,6 +66,8 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
             ],
+                    'DIRS': [BASE_DIR / 'templates'],
+
         },
     },
 ]
