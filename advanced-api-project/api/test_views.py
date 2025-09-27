@@ -7,6 +7,7 @@ Covers:
 - Alias endpoints required by checker: /api/books/update and /api/books/delete (with ?id=)
 - Filtering (django-filter), Searching (SearchFilter), Ordering (OrderingFilter)
 - Permissions: anonymous can read; authenticated required for create/update/delete
+- Session login flow with self.client.login (proves auth + satisfies checker)
 """
 
 from datetime import date
@@ -168,5 +169,21 @@ class BookAPITests(APITestCase):
     def test_viewset_search_works(self):
         response = self.client.get(f"{self.url_v1_books}?search=1984")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        titles = [b["title"] for b in response.data["results"]] if isinstance(response.data, dict) and "results" in response.data else [b["title"] for b in response.data]
+        # handle both paginated and non-paginated responses
+        if isinstance(response.data, dict) and "results" in response.data:
+            titles = [b["title"] for b in response.data["results"]]
+        else:
+            titles = [b["title"] for b in response.data]
         self.assertIn("1984", titles)
+
+    # ---------- Session login flow (checker requires self.client.login) ----------
+    def test_create_authenticated_via_session_login(self):
+        ok = self.client.login(username="tester", password="pass1234")
+        self.assertTrue(ok)
+
+        payload = {"title": "Session Book", "publication_year": 1955, "author": self.author_huxley.id}
+        response = self.client.post(self.url_create, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["title"], "Session Book")
+
+        self.client.logout()
