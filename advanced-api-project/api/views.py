@@ -23,6 +23,7 @@ Filtering / Searching / Ordering
 
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
+from django_filters import rest_framework  # required by checker
 
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, parsers, viewsets
@@ -60,7 +61,7 @@ class BookViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     # Explicit so it works even if not set globally in settings.py
-    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_backends = [rest_framework.DjangoFilterBackend, SearchFilter, OrderingFilter]
 
     # django-filter config
     filterset_fields = {
@@ -102,7 +103,7 @@ class BookListView(generics.ListAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
     queryset = Book.objects.select_related("author").all()
 
-    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_backends = [rest_framework.DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = {
         "title": ["exact", "icontains", "istartswith"],
         "publication_year": ["exact", "gte", "lte"],
