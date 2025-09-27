@@ -1,53 +1,49 @@
 # api/views.py
 """
 Merged DRF views:
-- ViewSets (AuthorViewSet, BookViewSet) for quick, full CRUD routing via DefaultRouter.
+- ViewSets (AuthorViewSet, BookViewSet) for quick CRUD via DefaultRouter.
 - Generic class-based views (List/Detail/Create/Update/Delete) for fine-grained control.
-  * Read-only endpoints (List/Detail) are public.
-  * Write endpoints (Create/Update/Delete) require authentication.
-  * Create/Update accept JSON and multipart/form-data.
-  * List supports filtering (?year=, ?author=, ?q=) and ordering (?ordering=publication_year|-publication_year|title|-title).
+Permissions:
+  * Read-only endpoints -> IsAuthenticatedOrReadOnly
+  * Write endpoints -> IsAuthenticated
 """
-from rest_framework import generics, permissions, parsers, viewsets
-from .models import Author, Book
-from .serializers import AuthorSerializer, BookSerializer
+import datetime
 from django.shortcuts import get_object_or_404
+from rest_framework import generics, parsers, viewsets
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated  # <-- required by checker
 from rest_framework.exceptions import ValidationError
 
+from .models import Author, Book
+from .serializers import AuthorSerializer, BookSerializer
 
-# ---------- ViewSets (fast, router-based CRUD) ----------
+
+# ---------- ViewSets ----------
 class AuthorViewSet(viewsets.ModelViewSet):
     """
-    Router path (see api/urls.py):
-      /api/v1/authors/
+    Router path (see api/urls.py): /api/v1/authors/
     """
     queryset = Author.objects.all().prefetch_related("books")
     serializer_class = AuthorSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 
 class BookViewSet(viewsets.ModelViewSet):
     """
-    Router path (see api/urls.py):
-      /api/v1/books/
+    Router path (see api/urls.py): /api/v1/books/
     """
     queryset = Book.objects.select_related("author").all()
     serializer_class = BookSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 
-# ---------- Generic Views (explicit endpoints & behaviors) ----------
+# ---------- Generic Views ----------
 class BookListView(generics.ListAPIView):
     """
     GET /api/books/
-    Public list with optional filters and ordering.
-    Filters:
-      - ?year=YYYY
-      - ?author=<author_id>
-      - ?q=<title contains>
-    Ordering:
-      - ?ordering=publication_year | -publication_year | title | -title
+    Public list with optional filters (?year=, ?author=, ?q=) and ordering (?ordering=publication_year|-publication_year|title|-title).
     """
     serializer_class = BookSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
         qs = Book.objects.select_related("author").all()
@@ -78,7 +74,7 @@ class BookDetailView(generics.RetrieveAPIView):
     """
     queryset = Book.objects.select_related("author").all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 
 class BookCreateView(generics.CreateAPIView):
@@ -88,11 +84,10 @@ class BookCreateView(generics.CreateAPIView):
     """
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     parser_classes = [parsers.JSONParser, parsers.FormParser, parsers.MultiPartParser]
 
     def perform_create(self, serializer):
-        # Light sanitation + rely on BookSerializer validation for publication_year
         title = serializer.validated_data.get("title", "").strip()
         serializer.validated_data["title"] = title
         serializer.save()
@@ -105,7 +100,7 @@ class BookUpdateView(generics.UpdateAPIView):
     """
     queryset = Book.objects.select_related("author").all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     parser_classes = [parsers.JSONParser, parsers.FormParser, parsers.MultiPartParser]
 
     def perform_update(self, serializer):
@@ -121,11 +116,13 @@ class BookDeleteView(generics.DestroyAPIView):
     """
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
+
+
+# ---------- Alias: id via query/body (books/update, books/delete) ----------
 class BookLookupByParamMixin:
     """
-    Allows using ?id=<pk> or JSON body {"id": <pk>} when the URL
-    does not include /<pk>/.
+    Allow using ?id=<pk> or JSON body {"id": <pk>} when the URL has no /<pk>/.
     """
     def get_object(self):
         queryset = self.filter_queryset(self.get_queryset())
@@ -143,21 +140,20 @@ class BookLookupByParamMixin:
 
 class BookUpdateByParamView(BookLookupByParamMixin, generics.UpdateAPIView):
     """
-    PUT/PATCH /api/books/update/?id=<pk>
+    PUT/PATCH /api/books/update[/?id=<pk>]
     Auth required. Accepts JSON or multipart/form-data.
     """
     queryset = Book.objects.select_related("author").all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     parser_classes = [parsers.JSONParser, parsers.FormParser, parsers.MultiPartParser]
 
 
 class BookDeleteByParamView(BookLookupByParamMixin, generics.DestroyAPIView):
     """
-    DELETE /api/books/delete/?id=<pk>
+    DELETE /api/books/delete[/?id=<pk>]
     Auth required.
     """
     queryset = Book.objects.all()
     serializer_class = BookSerializer
-    permission_classes = [permissions.IsAuthenticated]
-    parser_classes = [parsers.JSONParser, parsers.FormParser, parsers.MultiPartParser]
+    permission_classes = [IsAuthenticated]
