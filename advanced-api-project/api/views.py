@@ -11,6 +11,8 @@ Merged DRF views:
 from rest_framework import generics, permissions, parsers, viewsets
 from .models import Author, Book
 from .serializers import AuthorSerializer, BookSerializer
+from django.shortcuts import get_object_or_404
+from rest_framework.exceptions import ValidationError
 
 
 # ---------- ViewSets (fast, router-based CRUD) ----------
@@ -120,3 +122,42 @@ class BookDeleteView(generics.DestroyAPIView):
     queryset = Book.objects.all()
     serializer_class = BookSerializer
     permission_classes = [permissions.IsAuthenticated]
+class BookLookupByParamMixin:
+    """
+    Allows using ?id=<pk> or JSON body {"id": <pk>} when the URL
+    does not include /<pk>/.
+    """
+    def get_object(self):
+        queryset = self.filter_queryset(self.get_queryset())
+        pk = (
+            self.kwargs.get("pk")
+            or self.request.query_params.get("id")
+            or (self.request.data.get("id") if hasattr(self.request, "data") else None)
+        )
+        if not pk:
+            raise ValidationError({"id": "Provide ?id=<pk> or include 'id' in the request body."})
+        obj = get_object_or_404(queryset, pk=pk)
+        self.check_object_permissions(self.request, obj)
+        return obj
+
+
+class BookUpdateByParamView(BookLookupByParamMixin, generics.UpdateAPIView):
+    """
+    PUT/PATCH /api/books/update/?id=<pk>
+    Auth required. Accepts JSON or multipart/form-data.
+    """
+    queryset = Book.objects.select_related("author").all()
+    serializer_class = BookSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [parsers.JSONParser, parsers.FormParser, parsers.MultiPartParser]
+
+
+class BookDeleteByParamView(BookLookupByParamMixin, generics.DestroyAPIView):
+    """
+    DELETE /api/books/delete/?id=<pk>
+    Auth required.
+    """
+    queryset = Book.objects.all()
+    serializer_class = BookSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [parsers.JSONParser, parsers.FormParser, parsers.MultiPartParser]
