@@ -30,6 +30,7 @@ from rest_framework import generics, parsers, viewsets
 from rest_framework.exceptions import ValidationError
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated  # required by checker
+from rest_framework import filters
 
 from .models import Author, Book
 from .serializers import AuthorSerializer, BookSerializer
@@ -61,7 +62,7 @@ class BookViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
     # Explicit so it works even if not set globally in settings.py
-    filter_backends = [rest_framework.DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_backends = [rest_framework.DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
 
     # django-filter config
     filterset_fields = {
@@ -103,7 +104,7 @@ class BookListView(generics.ListAPIView):
     permission_classes = [IsAuthenticatedOrReadOnly]
     queryset = Book.objects.select_related("author").all()
 
-    filter_backends = [rest_framework.DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filter_backends = [rest_framework.DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = {
         "title": ["exact", "icontains", "istartswith"],
         "publication_year": ["exact", "gte", "lte"],
