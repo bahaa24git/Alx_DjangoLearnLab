@@ -1,8 +1,56 @@
-{% extends 'blog/base.html' %}
+{% extends "blog/base.html" %}
 {% block title %}{{ post.title }}{% endblock %}
 {% block content %}
+<article class="post">
   <h2>{{ post.title }}</h2>
-  <p><small>by {{ post.author }} · {{ post.published_date|date:"Y-m-d H:i" }}</small></p>
-  <div>{{ post.content|linebreaks }}</div>
-  <p><a href="{% url 'blog:post_list' %}">← Back</a></p>
+  <p class="meta">by {{ post.author }} · {{ post.published_date|date:"Y-m-d H:i" }}</p>
+  <div class="content">{{ post.content|linebreaks }}</div>
+
+  <p><a href="{% url 'blog:post_list' %}">← Back to all posts</a></p>
+
+  {% if request.user == post.author %}
+    <p>
+      <a href="{% url 'blog:post_update' post.pk %}">Edit</a> ·
+      <a href="{% url 'blog:post_delete' post.pk %}">Delete</a>
+    </p>
+  {% endif %}
+</article>
+
+<hr>
+
+<section class="comments">
+  <h3>Comments ({{ comments|length }})</h3>
+
+  <ul class="comment-list">
+    {% for c in comments %}
+      <li class="comment">
+        <p><strong>{{ c.author }}</strong> · <small>{{ c.created_at|date:"Y-m-d H:i" }}</small></p>
+        <p>{{ c.content|linebreaks }}</p>
+        {% if request.user == c.author %}
+          <p>
+            <a href="{% url 'blog:comment_update' c.pk %}">Edit</a> ·
+            <a href="{% url 'blog:comment_delete' c.pk %}">Delete</a>
+          </p>
+        {% endif %}
+      </li>
+    {% empty %}
+      <li>No comments yet.</li>
+    {% endfor %}
+  </ul>
+
+  {% if request.user.is_authenticated %}
+    <h4>Add a comment</h4>
+    <form method="post" action="{% url 'blog:comment_create' post.pk %}">
+      {% csrf_token %}
+      {{ comment_form.non_field_errors }}
+      <div>
+        <label for="{{ comment_form.content.id_for_label }}">Comment</label>
+        {{ comment_form.content }} {{ comment_form.content.errors }}
+      </div>
+      <button type="submit">Post Comment</button>
+    </form>
+  {% else %}
+    <p><a href="{% url 'blog:login' %}?next={% url 'blog:post_detail' post.pk %}">Log in</a> to comment.</p>
+  {% endif %}
+</section>
 {% endblock %}
