@@ -1,15 +1,27 @@
-{% extends 'blog/base.html' %}
+{% extends "blog/base.html" %}
 {% block title %}Posts{% endblock %}
 {% block content %}
-  <h2>Latest Posts</h2>
-  <ul>
-    {% for post in posts %}
-      <li>
-        <a href="{% url 'blog:post_detail' post.pk %}">{{ post.title }}</a>
-        <small>by {{ post.author }} · {{ post.published_date|date:"Y-m-d H:i" }}</small>
-      </li>
-    {% empty %}
-      <li>No posts yet.</li>
-    {% endfor %}
-  </ul>
+<h2>All Posts</h2>
+
+{% if request.user.is_authenticated %}
+  <p><a href="{% url 'blog:post_create' %}">+ New Post</a></p>
+{% endif %}
+
+<ul class="post-list">
+  {% for post in posts %}
+    <li class="post-item">
+      <h3><a href="{% url 'blog:post_detail' post.pk %}">{{ post.title }}</a></h3>
+      <p class="meta">by {{ post.author }} · {{ post.published_date|date:"Y-m-d H:i" }}</p>
+      <p class="excerpt">{{ post.content|truncatewords:25 }}</p>
+      {% if request.user == post.author %}
+        <p>
+          <a href="{% url 'blog:post_update' post.pk %}">Edit</a> ·
+          <a href="{% url 'blog:post_delete' post.pk %}">Delete</a>
+        </p>
+      {% endif %}
+    </li>
+  {% empty %}
+    <li>No posts yet.</li>
+  {% endfor %}
+</ul>
 {% endblock %}
