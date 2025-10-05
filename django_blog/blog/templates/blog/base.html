@@ -1,8 +1,9 @@
 <!-- django_blog/blog/templates/blog/base.html -->
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"> 
 <head>
+  {% block extra_head %}{% endblock %}
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>{% block title %}django_blog{% endblock %}</title>
