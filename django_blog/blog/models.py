@@ -7,17 +7,20 @@ class Post(models.Model):
     title = models.CharField(max_length=200)
     content = models.TextField()
     published_date = models.DateTimeField(auto_now_add=True)
-    author = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='posts'
-    )
-
-    class Meta:
-        ordering = ['-published_date']  # newest first
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    tags = models.ManyToManyField('Tag', blank=True, related_name='posts')  # <- NEW
 
     def __str__(self):
         return self.title
+
+class Tag(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    class Meta:
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
 
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')

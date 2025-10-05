@@ -1,0 +1,30 @@
+{% extends "blog/base.html" %}
+{% block title %}Search{% endblock %}
+{% block content %}
+<h2>Search results{% if query %} for “{{ query }}”{% endif %}</h2>
+
+<form action="{% url 'blog:post_search' %}" method="get">
+  <input type="text" name="q" value="{{ query|default:'' }}" placeholder="Search posts...">
+  <button type="submit">Search</button>
+</form>
+
+<ul class="post-list">
+  {% for post in posts %}
+    <li class="post-item">
+      <h3><a href="{% url 'blog:post_detail' post.pk %}">{{ post.title }}</a></h3>
+      <p class="meta">by {{ post.author }} · {{ post.published_date|date:"Y-m-d H:i" }}</p>
+      <p class="excerpt">{{ post.content|truncatewords:25 }}</p>
+      {% if post.tags.all %}
+        <p class="tags">
+          Tags:
+          {% for t in post.tags.all %}
+            <a href="{% url 'blog:posts_by_tag' t.name %}">{{ t.name }}</a>{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        </p>
+      {% endif %}
+    </li>
+  {% empty %}
+    <li>No matching posts.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

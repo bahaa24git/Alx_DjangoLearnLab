@@ -6,14 +6,23 @@
 <form method="post" novalidate>
   {% csrf_token %}
   {{ form.non_field_errors }}
+
   <div>
     <label for="{{ form.title.id_for_label }}">Title</label>
     {{ form.title }} {{ form.title.errors }}
   </div>
+
   <div>
     <label for="{{ form.content.id_for_label }}">Content</label>
     {{ form.content }} {{ form.content.errors }}
   </div>
+
+  <div>
+    <label for="{{ form.tags_input.id_for_label }}">Tags</label>
+    {{ form.tags_input }} {{ form.tags_input.errors }}
+    {% if form.tags_input.help_text %}<small>{{ form.tags_input.help_text }}</small>{% endif %}
+  </div>
+
   <button type="submit">{% if object %}Save Changes{% else %}Create{% endif %}</button>
 </form>
 

@@ -1,7 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
-from .models import Post , Comment
+from .models import Post, Comment
+
 User = get_user_model()
 
 class RegisterForm(UserCreationForm):
@@ -25,16 +26,27 @@ class ProfileForm(forms.ModelForm):
         model = User
         fields = ("email",)
 
+
 class PostForm(forms.ModelForm):
+    # IMPORTANT: use a DIFFERENT name than the M2M field
+    tags_input = forms.CharField(
+        required=False,
+        help_text="Comma-separated (e.g. Django, Python)"
+    )
+
     class Meta:
         model = Post
-        fields = ["title", "content"]
+        fields = ["title", "content"]  # do NOT include the M2M 'tags'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            existing = self.instance.tags.values_list("name", flat=True)
+            self.fields["tags_input"].initial = ", ".join(existing)
 
 
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
         fields = ["content"]
-        widgets = {
-            "content": forms.Textarea(attrs={"rows": 3}),
-        }
+        widgets = {"content": forms.Textarea(attrs={"rows": 3})}

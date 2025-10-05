@@ -13,6 +13,10 @@
   <header class="site-header">
     <div class="container">
       <h1><a href="{% url 'blog:post_list' %}">My Django Blog</a></h1>
+<form action="{% url 'blog:post_search' %}" method="get" style="float:right; display:inline">
+  <input type="text" name="q" placeholder="Search posts..." value="{{ query|default:'' }}">
+  <button type="submit">Search</button>
+</form>
 
       <nav style="float:right">
         {% if request.user.is_authenticated %}

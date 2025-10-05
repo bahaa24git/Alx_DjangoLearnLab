@@ -1,7 +1,8 @@
+<!-- blog/templates/blog/post_list.html -->
 {% extends "blog/base.html" %}
 {% block title %}Posts{% endblock %}
 {% block content %}
-<h2>All Posts</h2>
+<h2>{% if current_tag %}Posts tagged "{{ current_tag }}"{% else %}All Posts{% endif %}</h2>
 
 {% if request.user.is_authenticated %}
   <p><a href="{% url 'blog:post_create' %}">+ New Post</a></p>
@@ -13,6 +14,18 @@
       <h3><a href="{% url 'blog:post_detail' post.pk %}">{{ post.title }}</a></h3>
       <p class="meta">by {{ post.author }} · {{ post.published_date|date:"Y-m-d H:i" }}</p>
       <p class="excerpt">{{ post.content|truncatewords:25 }}</p>
+
+      {% with ts=post.tags.all %}
+        {% if ts %}
+          <p class="tags">
+            Tags:
+            {% for t in ts %}
+              <a href="{% url 'blog:posts_by_tag' t.name %}">{{ t.name }}</a>{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+          </p>
+        {% endif %}
+      {% endwith %}
+
       {% if request.user == post.author %}
         <p>
           <a href="{% url 'blog:post_update' post.pk %}">Edit</a> ·
@@ -21,7 +34,7 @@
       {% endif %}
     </li>
   {% empty %}
-    <li>No posts yet.</li>
+    <li>No posts found.</li>
   {% endfor %}
 </ul>
 {% endblock %}
