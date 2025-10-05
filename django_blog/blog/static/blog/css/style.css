@@ -2,7 +2,7 @@
 :root { --maxw: 860px; }
 * { box-sizing: border-box; }
 body { margin: 0; font-family: system-ui, Arial, sans-serif; line-height: 1.6; }
-.container { max-width: var(--maxw); margin: 0 auto; padding: 1rem; }
+.container { max-width: var(--maxw); margin: 1.5 auto; padding: 1.5rem; padding-bottom: 30px;}
 .site-header, .site-footer { background:#0f172a; color:#fff; }
 .site-header a { color:#fff; text-decoration:none; }
 .post-list { list-style: none; padding-left: 0; }
