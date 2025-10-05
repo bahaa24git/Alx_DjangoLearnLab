@@ -4,7 +4,7 @@ from .views import (
     PostListView, PostDetailView,
     PostCreateView, PostUpdateView, PostDeleteView,
     register_view, profile_view, CommentCreateView, CommentUpdateView, CommentDeleteView,
-    TagPostListView, PostSearchView, 
+    TagPostListView, PostSearchView, PostByTagListView,
 )
 
 app_name = 'blog'
@@ -30,5 +30,7 @@ urlpatterns = [
         #Tag + Search
     path('tags/<str:tag_name>/', TagPostListView.as_view(), name='posts_by_tag'),
     path('search/', PostSearchView.as_view(), name='post_search'),
+    path('tags/<slug:tag_slug>/', PostByTagListView.as_view(), name='posts_by_tag'),
+
 ]
 

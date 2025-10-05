@@ -189,3 +189,24 @@ class PostSearchView(ListView):
         ctx = super().get_context_data(**kwargs)
         ctx["query"] = (self.request.GET.get("q") or "").strip()
         return ctx
+    
+
+class PostByTagListView(ListView):
+    model = Post
+    template_name = "blog/post_list.html"
+    context_object_name = "posts"
+
+    def get_queryset(self):
+        tag_slug = self.kwargs["tag_slug"]
+        # simple case-insensitive match on tag name; works for plain slugs like "django"
+        return (
+            Post.objects.filter(tags__name__iexact=tag_slug)
+            .select_related("author")
+            .order_by("-published_date")
+            .distinct()
+        )
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["current_tag"] = self.kwargs["tag_slug"]
+        return ctx
