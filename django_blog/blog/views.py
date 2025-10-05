@@ -19,7 +19,7 @@ def register_view(request):
     else:
         form = RegisterForm()
 
-    return render(request, 'blog/auth/register.html', {"form": form})
+    return render(request, 'blog/register.html', {"form": form})
 
 @login_required
 def profile_view(request):
@@ -32,7 +32,7 @@ def profile_view(request):
     else:
         form = ProfileForm(instance=request.user)
 
-    return render(request, 'blog/auth/profile.html', {"form": form})
+    return render(request, 'blog/profile.html', {"form": form})
 
 class PostListView(ListView):
     model = Post

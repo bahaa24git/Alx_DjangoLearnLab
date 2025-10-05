@@ -4,6 +4,7 @@
 {% block extra_head %}
   <link rel="stylesheet" href="{% static 'css/register.css' %}">
 {% endblock %}
+{% block content %}
 
 <h2>Create an account</h2>
 <form method="post" novalidate>
@@ -28,3 +29,4 @@
   <button type="submit">Sign up</button>
 </form>
 <p>Already have an account? <a href="{% url 'blog:login' %}">Login</a></p>
+{% endblock %}

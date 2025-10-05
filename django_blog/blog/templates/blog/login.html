@@ -2,9 +2,10 @@
 {% load static %}
 {% block title %}Login{% endblock %}
 {% block extra_head %}
-  <link rel="stylesheet" href="{% static 'css/login.css' %}">
+  <link rel="stylesheet" href="{% static 'blog/css/login.css' %}">
 {% endblock %}
 
+{% block content %}
 <h2>Login</h2>
 <form method="post" novalidate>
   {% csrf_token %}
@@ -20,3 +21,4 @@
   <button type="submit">Log in</button>
 </form>
 <p>Don’t have an account? <a href="{% url 'blog:register' %}">Register</a></p>
+{% endblock %}
