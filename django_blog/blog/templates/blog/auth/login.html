@@ -1,39 +1,22 @@
 {% extends "blog/base.html" %}
+{% load static %}
 {% block title %}Login{% endblock %}
 {% block extra_head %}
   <link rel="stylesheet" href="{% static 'blog/css/login.css' %}">
 {% endblock %}
-... (rest of your form)
 
-{% extends "blog/base.html" %}
-{% block title %}Login{% endblock %}
-{% block content %}
 <h2>Login</h2>
-
-{% if messages %}
-  <ul>
-    {% for message in messages %}<li>{{ message }}</li>{% endfor %}
-  </ul>
-{% endif %}
-
 <form method="post" novalidate>
   {% csrf_token %}
   {{ form.non_field_errors }}
-
   <div>
     <label for="{{ form.username.id_for_label }}">Username</label>
-    {{ form.username }}
-    {{ form.username.errors }}
+    {{ form.username }} {{ form.username.errors }}
   </div>
-
   <div>
     <label for="{{ form.password.id_for_label }}">Password</label>
-    {{ form.password }}
-    {{ form.password.errors }}
+    {{ form.password }} {{ form.password.errors }}
   </div>
-
   <button type="submit">Log in</button>
 </form>
-
 <p>Don’t have an account? <a href="{% url 'blog:register' %}">Register</a></p>
-{% endblock %}

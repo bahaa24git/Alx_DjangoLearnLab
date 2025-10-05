@@ -1,50 +1,30 @@
 {% extends "blog/base.html" %}
+{% load static %}
 {% block title %}Register{% endblock %}
 {% block extra_head %}
   <link rel="stylesheet" href="{% static 'blog/css/register.css' %}">
 {% endblock %}
 
-{% extends "blog/base.html" %}
-{% block title %}Register{% endblock %}
-{% block content %}
 <h2>Create an account</h2>
-
-{% if messages %}
-  <ul>
-    {% for message in messages %}<li>{{ message }}</li>{% endfor %}
-  </ul>
-{% endif %}
-
 <form method="post" novalidate>
   {% csrf_token %}
   {{ form.non_field_errors }}
-
   <div>
     <label for="{{ form.username.id_for_label }}">Username</label>
-    {{ form.username }}
-    {{ form.username.errors }}
+    {{ form.username }} {{ form.username.errors }}
   </div>
-
   <div>
     <label for="{{ form.email.id_for_label }}">Email</label>
-    {{ form.email }}
-    {{ form.email.errors }}
+    {{ form.email }} {{ form.email.errors }}
   </div>
-
   <div>
     <label for="{{ form.password1.id_for_label }}">Password</label>
-    {{ form.password1 }}
-    {{ form.password1.errors }}
+    {{ form.password1 }} {{ form.password1.errors }}
   </div>
-
   <div>
     <label for="{{ form.password2.id_for_label }}">Confirm Password</label>
-    {{ form.password2 }}
-    {{ form.password2.errors }}
+    {{ form.password2 }} {{ form.password2.errors }}
   </div>
-
   <button type="submit">Sign up</button>
 </form>
-
 <p>Already have an account? <a href="{% url 'blog:login' %}">Login</a></p>
-{% endblock %}
