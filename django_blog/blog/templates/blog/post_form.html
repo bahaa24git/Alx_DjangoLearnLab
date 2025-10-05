@@ -1,3 +1,4 @@
+<!-- django_blog/blog/templates/blog/post_form.html -->
 {% extends "blog/base.html" %}
 {% block title %}{% if object %}Edit Post{% else %}New Post{% endif %}{% endblock %}
 {% block content %}
@@ -20,7 +21,7 @@
   <div>
     <label for="{{ form.tags_input.id_for_label }}">Tags</label>
     {{ form.tags_input }} {{ form.tags_input.errors }}
-    {% if form.tags_input.help_text %}<small>{{ form.tags_input.help_text }}</small>{% endif %}
+    <small>{{ form.fields.tags_input.help_text }}</small>
   </div>
 
   <button type="submit">{% if object %}Save Changes{% else %}Create{% endif %}</button>
