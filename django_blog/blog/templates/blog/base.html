@@ -3,11 +3,11 @@
 <!DOCTYPE html>
 <html lang="en"> 
 <head>
-{% block extra_head %}{% endblock %}
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>{% block title %}django_blog{% endblock %}</title>
   <link rel="stylesheet" href="{% static 'blog/css/style.css' %}">
+  {% block extra_head %}{% endblock %}
 </head>
 <body>
   <header class="site-header">
