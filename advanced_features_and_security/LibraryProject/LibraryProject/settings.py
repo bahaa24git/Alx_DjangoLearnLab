@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-&u%al)--yy^tp1*02-(mnxn3lva)7oa^+yfz5j9rb&rlyq2k(#'
+SECRET_KEY = 'django-insecure-hx9p3iqr9#&*qp%xfabk_(q__(#hs7umo*s0gmz4326jrkg67$'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -37,9 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "bookshelf",
-    'relationship_app',
-
+    'bookshelf',
 ]
 
 MIDDLEWARE = [
@@ -57,7 +56,7 @@ ROOT_URLCONF = 'LibraryProject.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],  # correct location for DIRS
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -68,7 +67,6 @@ TEMPLATES = [
         },
     },
 ]
-
 
 WSGI_APPLICATION = 'LibraryProject.wsgi.application'
 
@@ -102,6 +100,18 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+
+    # your apps
+    'bookshelf',
+    'relationship_app',
+]
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
@@ -125,5 +135,104 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+LOGIN_REDIRECT_URL = 'list-books'   # after successful login
+# where to go after logout (if you redirect)
+LOGOUT_REDIRECT_URL = 'login'
+LOGIN_URL = 'login'
 
-LOGOUT_REDIRECT_URL = '/login/'  # or any page you want users to go after logout
+INSTALLED_APPS = [
+    # ...
+    "bookshelf",
+    # ...
+]
+
+AUTH_USER_MODEL = "bookshelf.CustomUser"
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+# --- SECURITY: turn off debug in production
+DEBUG = os.environ.get("DJANGO_DEBUG", "False").lower(
+) == "true"  # set False in prod
+
+# Allow hosts via env (example defaults for local/dev)
+ALLOWED_HOSTS = os.environ.get(
+    "DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
+
+# --- SECURITY MIDDLEWARE (should already be present)
+MIDDLEWARE = [
+    "django.middleware.security.SecurityMiddleware",
+    # CSP middleware (see config below). Keep it early in the list, after SecurityMiddleware.
+    "csp.middleware.CSPMiddleware",            # ← requires: pip install django-csp
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+]
+
+# --- BROWSER-SIDE PROTECTIONS
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = "DENY"
+# NOTE: SECURE_BROWSER_XSS_FILTER is deprecated in modern Django/Chrome,
+# but included here to satisfy the exercise requirements.
+SECURE_BROWSER_XSS_FILTER = True
+
+# --- COOKIE SECURITY (HTTPS‐only in production)
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+
+
+# --- CONTENT SECURITY POLICY (django-csp)
+INSTALLED_APPS = [
+    # ...
+    "bookshelf",  # your app
+    "csp",        # ← django-csp (pip install django-csp)
+    # ...
+]
+
+# Keep CSP strict; loosen only if you add trusted CDNs.
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'",)
+CSP_STYLE_SRC = ("'self'",)
+# allow inline data URIs for small imgs/icons if needed
+CSP_IMG_SRC = ("'self'", "data:")
+CSP_CONNECT_SRC = ("'self'",)
+CSP_FONT_SRC = ("'self'", "data:")
+
+
+def env_bool(name: str, default: bool) -> bool:
+    return str(os.environ.get(name, str(default))).lower() in ("1", "true", "t", "yes", "y")
+
+
+# --- Core prod toggles (set via environment) ---
+DEBUG = env_bool("DJANGO_DEBUG", False)
+ALLOWED_HOSTS = os.environ.get(
+    "DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+
+# If you're behind a reverse proxy/Load Balancer that terminates TLS (Nginx, ELB, Cloudflare),
+# this tells Django to trust the X-Forwarded-Proto header to detect HTTPS correctly.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# --- HTTPS enforcement ---
+# Redirect all HTTP requests to HTTPS in production.
+SECURE_SSL_REDIRECT = env_bool("DJANGO_SECURE_SSL_REDIRECT", True)
+
+# HTTP Strict Transport Security (HSTS). Once enabled in prod, keep it on.
+SECURE_HSTS_SECONDS = int(os.environ.get(
+    "DJANGO_SECURE_HSTS_SECONDS", 31536000))  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool(
+    "DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS", True)
+SECURE_HSTS_PRELOAD = env_bool("DJANGO_SECURE_HSTS_PRELOAD", True)
+
+# --- Secure cookies (HTTPS-only) ---
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+
+# --- Browser-side protections ---
+X_FRAME_OPTIONS = "DENY"                    # Clickjacking protection
+SECURE_CONTENT_TYPE_NOSNIFF = True          # Stop MIME sniffing
+# Kept for the exercise—even though modern browsers deprecate it
+SECURE_BROWSER_XSS_FILTER = True

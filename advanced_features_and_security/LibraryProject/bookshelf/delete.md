@@ -1,5 +1,9 @@
+# DELETE
+
+```python
 from bookshelf.models import Book
-book = Book.objects.get(id=1)
+count_before = Book.objects.count()
+book = Book.objects.get(title="Nineteen Eighty-Four", author="George Orwell", publication_year=1949)
 book.delete()
-Book.objects.all()
-# Expected output: <QuerySet []>
+count_after = Book.objects.count()
+(count_before, count_after)
